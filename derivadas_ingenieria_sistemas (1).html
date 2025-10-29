@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Derivadas en Ingeniería de Sistemas</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0e27;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            z-index: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3), transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(74, 86, 226, 0.3), transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(139, 92, 246, 0.2), transparent 50%);
+            animation: gradient 15s ease infinite;
+        }
+
+        @keyframes gradient {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(50px, -50px) rotate(120deg); }
+            66% { transform: translate(-50px, 50px) rotate(240deg); }
+        }
+        
+        .presentation {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 1000px;
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            box-shadow: 
+                0 0 0 1px rgba(255, 255, 255, 0.1),
+                0 20px 60px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+        
+        .slide {
+            display: none;
+            padding: 60px;
+            min-height: 650px;
+            animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .slide.active {
+            display: block;
+        }
+        
+        @keyframes slideIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(30px) scale(0.98);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        h1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 3em;
+            font-weight: 900;
+            margin-bottom: 15px;
+            text-align: center;
+            letter-spacing: -0.02em;
+        }
+        
+        h2 {
+            color: #f9fafb;
+            font-size: 2.2em;
+            font-weight: 700;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+            letter-spacing: -0.01em;
+        }
+        
+        h3 {
+            color: #e0e7ff;
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+        
+        p, li {
+            font-size: 1.1em;
+            line-height: 1.8;
+            color: #f3f4f6;
+            margin-bottom: 15px;
+            font-weight: 300;
+        }
+        
+        ul {
+            margin-left: 30px;
+        }
+        
+        .formula {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            padding: 25px;
+            border-radius: 20px;
+            margin: 25px 0;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            font-family: 'Courier New', monospace;
+            font-size: 1.4em;
+            text-align: center;
+            color: #e0e7ff;
+            font-weight: 600;
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .formula::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .highlight {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(245, 158, 11, 0.15));
+            padding: 20px;
+            border-radius: 16px;
+            margin: 25px 0;
+            border-left: 4px solid #fbbf24;
+            box-shadow: 0 4px 20px rgba(251, 191, 36, 0.1);
+        }
+        
+        .info-box {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(37, 99, 235, 0.15));
+            padding: 20px;
+            border-radius: 16px;
+            margin: 25px 0;
+            border-left: 4px solid #3b82f6;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.1);
+        }
+        
+        .example-box {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(124, 58, 237, 0.15));
+            padding: 20px;
+            border-radius: 16px;
+            margin: 25px 0;
+            border-left: 4px solid #8b5cf6;
+            font-size: 1.1em;
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .example-box:hover {
+            transform: translateX(5px);
+        }
+        
+        .success-box {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.15));
+            padding: 20px;
+            border-radius: 16px;
+            margin: 25px 0;
+            border-left: 4px solid #10b981;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.1);
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 25px 60px;
+            background: rgba(17, 24, 39, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        button {
+            padding: 14px 32px;
+            font-size: 1em;
+            font-weight: 600;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 
+                0 4px 15px rgba(102, 126, 234, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+        }
+
+        button:hover::before {
+            transform: translateX(100%);
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 
+                0 8px 25px rgba(102, 126, 234, 0.6),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        button:active {
+            transform: translateY(-1px);
+        }
+        
+        button:disabled {
+            background: rgba(75, 85, 99, 0.5);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        button:disabled::before {
+            display: none;
+        }
+        
+        .slide-counter {
+            text-align: center;
+            color: #9ca3af;
+            font-size: 1em;
+            font-weight: 500;
+            padding: 8px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #9ca3af;
+            font-size: 1.4em;
+            margin-top: 10px;
+            font-weight: 300;
+        }
+
+        strong {
+            color: #e0e7ff;
+            font-weight: 600;
+        }
+
+        .step {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 18px;
+            margin: 12px 0;
+            border-radius: 12px;
+            border-left: 3px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .step:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateX(5px);
+        }
+
+        .icon-box {
+            display: inline-block;
+            padding: 8px 16px;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 12px;
+            margin-right: 10px;
+            font-size: 1.3em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 20px 0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.3), rgba(118, 75, 162, 0.3));
+            color: #e0e7ff;
+            font-weight: 600;
+        }
+
+        tr {
+            transition: all 0.3s ease;
+        }
+
+        tr:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Progress bar */
+        .progress-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation">
+        <div class="progress-bar" id="progressBar"></div>
+        
+        <!-- Slide 1: Portada -->
+        <div class="slide active">
+            <h1>Derivadas en Ingeniería de Sistemas</h1>
+            <p class="subtitle">Aplicaciones Prácticas con 2 Ejemplos</p>
+            <div style="margin-top: 80px; text-align: center;">
+                <p style="font-size: 1.5em; color: #a5b4fc; margin: 35px 0;">
+                    <span class="icon-box">💾</span> Espacio en Disco
+                </p>
+                <p style="font-size: 1.5em; color: #c4b5fd; margin: 35px 0;">
+                    <span class="icon-box">📶</span> Usuarios Conectados
+                </p>
+            </div>
+            <div class="info-box" style="margin-top: 60px;">
+                <strong>Integrantes:</strong><br>
+                <strong>- Juan Andrés Guzmán</strong><br>
+                <strong>- Cristian Alejandro Beltrán</strong><br>
+                <strong>- Isabella Bernal Leyton</strong><br>
+                <strong>- Geronimo Sandoval Montealegre</strong>
+            </div>
+        </div>
+
+        <!-- Slide 2: Ejemplo 1 - Problema -->
+        <div class="slide">
+            <h2><span class="icon-box">💾</span> Ejemplo 1: Espacio en Disco</h2>
+            
+            <h3>🎯 El Problema</h3>
+            <p>Una base de datos crece con el tiempo. El espacio ocupado en GB está dado por:</p>
+            
+            <div class="formula">
+                E(t) = 3t² + 5t + 10
+            </div>
+
+            <div class="info-box">
+                <strong>Donde:</strong><br>
+                <strong>• E(t) = Espacio en GB</strong><br>
+                <strong>• t = Tiempo en días</strong><br>
+                <strong>• Ejemplo: después de 2 días, usamos E(2) = 3(2²) + 5(2) + 10 = 32 GB</strong>
+            </div>
+
+            <h3>❓ ¿Qué queremos saber?</h3>
+            <p><strong>¿Qué tan rápido está creciendo el espacio en disco?</strong></p>
+            
+            <p>Por ejemplo:</p>
+            <ul>
+                <li>¿Cuántos GB por día crece el día 1?</li>
+                <li>¿Cuántos GB por día crece el día 3?</li>
+                <li>¿Cuándo crece más rápido?</li>
+            </ul>
+
+            <div class="highlight">
+                <strong>💡 La derivada nos da la respuesta:</strong><br>
+                <strong>E'(t) nos dirá la velocidad de crecimiento en GB/día</strong>
+            </div>
+        </div>
+
+        <!-- Slide 3: Ejemplo 1 - Solución -->
+        <div class="slide">
+            <h2>Ejemplo 1: Calculando la Derivada 📐</h2>
+            
+            <h3>🔢 Función original:</h3>
+            <div class="formula">
+                E(t) = 3t² + 5t + 10
+            </div>
+
+            <h3>📝 Aplicamos las fórmulas de derivadas:</h3>
+            
+            <div class="step">
+                <strong>Regla 1: Derivada de t² es 2t</strong><br>
+                <strong>d/dt(3t²) = 3 × 2t =6t</strong>
+            </div>
+
+            <div class="step">
+                <strong>Regla 2: Derivada de t es 1</strong><br>
+                <strong>d/dt(5t) = 5 × 1 = 5</strong>
+            </div>
+
+            <div class="step">
+                <strong>Regla 3: Derivada de una constante es 0</strong><br>
+                <strong>d/dt(10) = 0</strong>
+            </div>
+
+            <h3>✅ Resultado:</h3>
+            <div class="formula">
+                E'(t) = 6t + 5
+            </div>
+
+            <div class="success-box">
+                <strong>¡Listo! Esta fórmula nos dice la velocidad de crecimiento en cualquier día.</strong>
+            </div>
+        </div>
+
+        <!-- Slide 4: Ejemplo 1 - Interpretación -->
+        <div class="slide">
+            <h2>Ejemplo 1: Interpretación 📊</h2>
+            
+            <h3>🧮 Calculemos la velocidad en diferentes días:</h3>
+
+            <div class="example-box">
+                <strong>Día 1:</strong><br>
+                <strong>E'(1) = 6(1) + 5 = 11 GB/día</strong><br>
+                <strong>El disco crece 11 GB cada día</strong>
+            </div>
+
+            <div class="example-box">
+                <strong>Día 2:</strong><br>
+                <strong>E'(2) = 6(2) + 5 = 17 GB/día</strong><br>
+                <strong>Crece más rápido que el día 1</strong>
+            </div>
+
+            <div class="example-box">
+                <strong>Día 3:</strong><br>
+                <strong>E'(3) = 6(3) + 5 = 23 GB/día</strong><br>
+                <strong>Sigue acelerándose</strong>
+            </div>
+
+            <div class="example-box">
+                <strong>Día 5:</strong><br>
+                <strong>E'(5) = 6(5) + 5 = 35 GB/día</strong><br>
+                <strong>¡Crecimiento muy rápido!</strong>
+            </div>
+
+            <div class="highlight">
+                <strong>🎯 Conclusión práctica:</strong><br>
+                <strong>El crecimiento se acelera cada día. Si hoy crece 11 GB/día, en 5 días crecerá 35 GB/día. Necesitamos planear comprar más almacenamiento pronto.</strong>
+            </div>
+        </div>
+
+        <!-- Slide 5: Ejemplo 2 - Problema -->
+        <div class="slide">
+            <h2><span class="icon-box">📶</span> Ejemplo 2: Usuarios Conectados</h2>
+            
+            <h3>🎯 El Problema</h3>
+            <p>Una aplicación web tiene usuarios conectados a lo largo del día. La cantidad de usuarios sigue este patrón:</p>
+            
+            <div class="formula">
+                U(h) = -2h² + 20h + 50
+            </div>
+
+            <div class="info-box">
+                <strong>Donde:<br>
+                • U(h) = Usuarios conectados<br>
+                • h = Hora del día (0 a 12)<br>
+                • Ejemplo: A las 3pm hay U(3) = -2(9) + 20(3) + 50 = 92 usuarios</strong>
+            </div>
+
+            <h3>❓ ¿Qué queremos saber?</h3>
+            <ul>
+                <li>¿A qué velocidad aumentan o disminuyen los usuarios?</li>
+                <li>¿En qué hora hay más usuarios conectados?</li>
+                <li>¿Cuándo deja de crecer y empieza a decrecer?</li>
+            </ul>
+
+            <div class="highlight">
+                <strong>💡 La derivada nos ayudará:<br>
+                U'(h) nos dirá si los usuarios están aumentando (+) o disminuyendo (-)</strong>
+            </div>
+        </div>
+
+        <!-- Slide 6: Ejemplo 2 - Solución -->
+        <div class="slide">
+            <h2>Ejemplo 2: Calculando la Derivada 📐</h2>
+            
+            <h3>🔢 Función original:</h3>
+            <div class="formula">
+                U(h) = -2h² + 20h + 50
+            </div>
+
+            <h3>📝 Aplicamos las fórmulas de derivadas:</h3>
+            
+            <div class="step">
+                <strong>Regla 1: Derivada de h² es 2h<br>
+                d/dh(-2h²) = -2 × 2h = -4h</strong>
+            </div>
+
+            <div class="step">
+                <strong>Regla 2: Derivada de h es 1<br>
+                d/dh(20h) = 20 × 1 = 20</strong>
+            </div>
+
+            <div class="step">
+                <strong>Regla 3: Derivada de constante es 0<br>
+                d/dh(50) = 0</strong>
+            </div>
+
+            <h3>✅ Resultado:</h3>
+            <div class="formula">
+                U'(h) = -4h + 20
+            </div>
+
+            <div class="success-box">
+                <strong>Esta es la velocidad de cambio de usuarios por hora</strong>
+            </div>
+        </div>
+
+        <!-- Slide 7: Ejemplo 2 - Punto Máximo -->
+        <div class="slide">
+            <h2>Ejemplo 2: ¿Cuándo hay más usuarios? 🔍</h2>
+            
+            <h3>🎯 Encontrar el punto máximo</h3>
+            <p>El máximo ocurre cuando la derivada es cero (deja de crecer):</p>
+            
+            <div class="formula">
+                U'(h) = -4h + 20 = 0
+            </div>
+
+            <div class="step">
+                <strong>Resolvemos:<br>
+                -4h + 20 = 0<br>
+                -4h = -20<br>
+                h = 20/4<br>
+                h = 5 horas</strong>
+            </div>
+
+            <div class="success-box">
+                <strong>✅ A las 5 horas (5:00 PM) hay más usuarios conectados</strong>
+            </div>
+
+            <h3>🧮 ¿Cuántos usuarios hay en ese momento?</h3>
+            <div class="example-box">
+                <strong>U(5) = -2(5²) + 20(5) + 50<br>
+                U(5) = -2(25) + 100 + 50<br>
+                U(5) = -50 + 100 + 50<br>
+                U(5) = 100 usuarios</strong> 👥
+            </div>
+        </div>
+
+        <!-- Slide 8: Ejemplo 2 - Interpretación -->
+        <div class="slide">
+            <h2>Ejemplo 2: Análisis Completo 📊</h2>
+            
+            <h3>🧮 Velocidad de cambio en diferentes horas:</h3>
+
+            <div class="example-box">
+                <strong>Hora 2 (2:00 PM):<br>
+                U'(2) = -4(2) + 20 = +12 usuarios/hora<br>
+                Están conectándose usuarios ⬆️</strong>
+            </div>
+
+            <div class="example-box">
+                <strong>Hora 5 (5:00 PM):<br>
+                U'(5) = -4(5) + 20 = 0 usuarios/hora<br>
+                Punto máximo (100 usuarios) 🔴</strong>
+            </div>
+
+            <div class="example-box">
+                <strong>Hora 7 (7:00 PM):<br>
+                U'(7) = -4(7) + 20 = -8 usuarios/hora<br>
+                Usuarios desconectándose ⬇️</strong>
+            </div>
+
+            <div class="example-box">
+                <strong>Hora 10 (10:00 PM):<br>
+                U'(10) = -4(10) + 20 = -20 usuarios/hora<br>
+                Desconexión rápida ⬇️⬇️</strong>
+            </div>
+
+            <div class="highlight">
+                <strong>🎯 Decisión práctica:<br>
+                Asignar más recursos del servidor entre las 3-7 PM cuando hay más actividad.</strong>
+            </div>
+        </div>
+        <!-- Controles -->
+        <div class="controls">
+            <button id="prevBtn" onclick="changeSlide(-1)">← Anterior</button>
+            <div class="slide-counter">
+                <span id="slideNumber">1</span> / <span id="totalSlides">9</span>
+            </div>
+            <button id="nextBtn" onclick="changeSlide(1)">Siguiente →</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        
+        document.getElementById('totalSlides').textContent = totalSlides;
+        updateProgressBar();
+        
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            
+            document.getElementById('slideNumber').textContent = currentSlide + 1;
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+            
+            updateProgressBar();
+        }
+        
+        function updateProgressBar() {
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+        
+        function changeSlide(direction) {
+            showSlide(currentSlide + direction);
+        }
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+        
+        showSlide(0);
+    </script>
+</body>
+</html>
